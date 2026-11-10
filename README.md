@@ -34,9 +34,12 @@ Pare o servidor Python antigo com `Ctrl+C` antes de começar. Para interromper o
 
 ```bash
 npm test
+npm run test:smoke
 npm run build
 npm run preview
 ```
+
+`npm run test:smoke` inicia os dois servidores por `npm run dev` e confirma que React/Vite e a API respondem em `/api/health` através do proxy.
 
 `npm test` executa uma bateria HTTP real usando SQLite temporário: valida cadastro, senha com hash, tentativas inválidas, login, cookie HttpOnly, sessão após reiniciar o servidor e logout. O teste apaga o banco temporário ao finalizar.
 
@@ -97,6 +100,7 @@ Configuração Cloudflare Pages:
 | `npm run dev:client` | Inicia somente o Vite |
 | `npm run dev:server` | Inicia somente a API SQLite |
 | `npm test` | Roda testes de integração com SQLite |
+| `npm run test:smoke` | Testa `npm run dev`, frontend e proxy da API |
 | `npm run build` | Compila frontend para `dist/` |
 | `npm run preview` | Prévia do build estático (sem API) |
 
@@ -114,5 +118,6 @@ vite.config.js          Proxy /api e configuração Vite
 server/index.mjs        Backend Node + SQLite
 server/auth.test.mjs    Testes HTTP com SQLite temporário
 scripts/dev.mjs         Inicialização dos dois servidores
+scripts/dev-smoke.mjs   Teste de inicialização e proxy
 data/pares.sqlite       Banco local, criado na primeira execução (ignorado pelo Git)
 ```
