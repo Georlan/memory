@@ -166,6 +166,109 @@ function validUserInput(data, needsName) {
   return { email, name, password };
 }
 
+// Requests from Cloudflare use bearer tokens; the legacy SQLite cookie is never forwarded.
+// Verify tokens against Supabase Auth (not decoded client-side), then use the caller's JWT
+// with PostgREST RLS. No service-role credentials are needed.
+async function handleSupabase(req, res, pathname, bodyReader = bodyAsJson) {
+  const url = process.env.SUPABASE_URL;
+  const apiKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !apiKey) return respond(res, 503, { error: "Supabase não configurado no backend." });
+  if (!/^https:\/\/[a-z0-9.-]+\.supabase\.co$/.test(url)) {
+    return respond(res, 503, { error: "URL de banco inválida." });
+  }
+  if (pathname === "/api/supabase/status" && req.method === "GET") {
+    try {
+      const r = await fetch(url + "/auth/v1/health", {
+        headers: { apikey: apiKey }, signal: AbortSignal.timeout(5000)
+      });
+      return respond(res, r.ok ? 200 : 503, { ok: r.ok, provider: "supabase" });
+    } catch {
+      return respond(res, 503, { ok: false, provider: "supabase" });
+    }
+  }
+  const bearer = req.headers.authorization || "";
+  if (!/^Bearer [A-Za-z0-9._-]{20,4096}$/.test(bearer)) {
+    return respond(res, 401, { error: "Token de acesso ausente." });
+  }
+  const clientHeaders = { apikey: apiKey, Authorization: bearer };
+  let identity;
+  try {
+    const verification = await fetch(url + "/auth/v1/user", {
+      headers: clientHeaders, signal: AbortSignal.timeout(5000)
+    });
+    if (!verification.ok) return respond(res, 401, { error: "Sessão inválida ou expirada." });
+    identity = await verification.json();
+    if (!identity?.id || typeof identity.id !== "string") {
+      return respond(res, 401, { error: "Sessão inválida." });
+    }
+  } catch {
+    return respond(res, 503, { error: "Serviço de autenticação indisponível." });
+  }
+  if (pathname === "/api/supabase/me" && req.method === "GET") {
+    return respond(res, 200, { user: { id: identity.id, email: identity.email } });
+  }
+  if (pathname !== "/api/supabase/scores") {
+    return respond(res, 404, { error: "Rota inexistente." });
+  }
+  if (req.method !== "GET" && req.method !== "PUT") {
+    return respond(res, 405, { error: "Método não permitido." }, { Allow: "GET, PUT" });
+  }
+  const endpoint = url + "/rest/v1/pares_best_scores";
+  const query = new URLSearchParams({ user_id: "eq." + identity.id, select: "difficulty,score,elapsed_seconds,moves" });
+  const dbHeaders = { ...clientHeaders, Accept: "application/json" };
+  let existing;
+  try {
+    const answer = await fetch(endpoint + "?" + query.toString(), {
+      headers: dbHeaders, signal: AbortSignal.timeout(6000)
+    });
+    if (!answer.ok) return respond(res, 503, { error: "Não foi possível consultar resultados." });
+    existing = await answer.json();
+    if (!Array.isArray(existing)) throw new Error("Invalid scores response");
+  } catch {
+    return respond(res, 503, { error: "Banco de resultados indisponível." });
+  }
+  if (req.method === "GET") return respond(res, 200, { records: existing });
+
+  const body = await bodyReader(req);
+  const { difficulty, score, moves, elapsed_seconds: elapsed } = body;
+  if (!["easy", "medium", "hard"].includes(difficulty) ||
+    !Number.isInteger(score) || score < 0 || score > 1000 ||
+    !Number.isInteger(moves) || moves < 1 || moves > 100000 ||
+    !Number.isInteger(elapsed) || elapsed < 0 || elapsed > 86400) {
+    return respond(res, 400, { error: "Resultado inválido." });
+  }
+  const previous = existing.find(row => row.difficulty === difficulty);
+  if (previous && (previous.score > score ||
+    (previous.score === score && previous.elapsed_seconds <= elapsed))) {
+    return respond(res, 200, { saved: false, record: previous });
+  }
+  const values = {
+    user_id: identity.id,
+    difficulty, score, moves, elapsed_seconds: elapsed
+  };
+  try {
+    const insertUrl = endpoint + "?on_conflict=user_id,difficulty";
+    const result = await fetch(insertUrl, {
+      method: "POST",
+      headers: {
+        ...dbHeaders,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=representation"
+      },
+      body: JSON.stringify(values),
+      signal: AbortSignal.timeout(6000)
+    });
+    if (!result.ok) {
+      console.error("[Supabase] write status:", result.status);
+      return respond(res, 503, { error: "Não foi possível salvar o resultado." });
+    }
+    const rows = await result.json();
+    return respond(res, 200, { saved: true, record: rows[0] });
+  } catch {
+    return respond(res, 503, { error: "Falha de conexão com o banco." });
+  }
+}
+
 export function createAuthServer(db, { staticDir = null } = {}) {
   // Limite leve para desenvolvimento local; em produção usar proteção distribuída.
   const attempts = new Map();
@@ -203,6 +306,15 @@ export function createAuthServer(db, { staticDir = null } = {}) {
       if (!pathname.startsWith("/api/")) {
         return staticDir ? await serveFrontend(req, res, pathname, staticDir) :
           respond(res, 404, { error: "Rota inexistente." });
+      }
+      if (pathname.startsWith("/api/supabase/")) {
+        if (req.method === "PUT") {
+          const origin = req.headers.origin;
+          if (origin && !originAllowlist.has(origin)) {
+            return respond(res, 403, { error: "Origem não autorizada." });
+          }
+        }
+        return await handleSupabase(req, res, pathname);
       }
       if (req.method === "GET" && pathname === "/api/auth/me") {
         const token = readCookie(req.headers.cookie);
