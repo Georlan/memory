@@ -1,15 +1,19 @@
 {
   "name": "pares-memory-game",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev.mjs",
+    "dev:client": "vite --host 127.0.0.1",
+    "dev:server": "node server/index.mjs",
+    "test": "node --test server/*.test.mjs",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:smoke": "node scripts/dev-smoke.mjs"
   },
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.13.0 <23"
   },
   "dependencies": {
     "react": "^19.2.0",

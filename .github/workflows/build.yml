@@ -19,5 +19,9 @@ jobs:
           cache-dependency-path: package.json
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Run SQLite API integration tests
+        run: npm test
+      - name: Smoke test local Vite and API servers
+        run: npm run test:smoke
       - name: Build production assets
         run: npm run build
