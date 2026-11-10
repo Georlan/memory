@@ -4,11 +4,13 @@ const RAILWAY_ORIGIN = "https://memory-production-6ff74d87.up.railway.app";
 const ALLOWED_PATHS = new Set([
   "/api/health",
   "/api/supabase/me",
+  "/api/supabase/status",
   "/api/supabase/scores"
 ]);
 const METHODS = {
   "/api/health": new Set(["GET", "HEAD"]),
   "/api/supabase/me": new Set(["GET"]),
+  "/api/supabase/status": new Set(["GET"]),
   "/api/supabase/scores": new Set(["GET", "PUT"])
 };
 
