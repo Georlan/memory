@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import React, { useEffect, useReducer, useRef, useState } from "react";
 import racerArt from "../assets/racer-art.svg";
 import "../styles.css";
 
@@ -225,7 +225,7 @@ export default function App() {
         <div className="hero-ink hero-ink-b" aria-hidden="true"></div>
         <div className="hero-copy">
           <div className="hero-eyebrow"><span className="hero-indicator" aria-hidden="true"></span> JOGO DA MEMÓRIA <span className="eyebrow-separator">/</span> VOL. 001</div>
-          <h1 id="pageTitle">SUA MENTE.<br><span>SEM FREIOS.</span></h1>
+          <h1 id="pageTitle">SUA MENTE.<br /><span>SEM FREIOS.</span></h1>
           <p>Na pista da memória, cada segundo conta. Revele as cartas, encontre os pares e prove que você não perde o foco.</p>
           <a href="#arena" className="hero-cta">ENTRAR NA PISTA <span aria-hidden="true">↘</span></a>
           <div className="hero-footnote"><span className="mini-star" aria-hidden="true">✳</span> VELOCIDADE É NADA SEM CONCENTRAÇÃO.</div>
@@ -310,7 +310,7 @@ export default function App() {
     <div className="win-content">
       <span className="win-emblem" aria-hidden="true">★</span>
       <span className="win-kicker">BANDEIRA QUADRICULADA / PARABÉNS</span>
-      <h2 id="winTitle">VOCÊ CRUZOU<br><em>A LINHA DE CHEGADA.</em></h2>
+      <h2 id="winTitle">VOCÊ CRUZOU<br /><em>A LINHA DE CHEGADA.</em></h2>
       <p id="winMessage">{isNewRecord ? 'Volta histórica! Novo recorde pessoal. 🏆' : 'Você venceu! Que tal bater esse tempo na próxima volta?'}</p>
       <div className="win-stats">
         <div><span>JOGADAS</span><strong id="winMoves">{game.moves}</strong></div>
