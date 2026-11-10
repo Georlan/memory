@@ -1,10 +1,10 @@
 # PARES — Sua mente. Sem freios.
 
-Um jogo da memória responsivo com estética de pôster automobilístico, agora feito com **React + Vite**.
+Jogo da memória em **React + Vite** com estética automobilística. A fase experimental inclui uma **API Node.js local** e banco **SQLite real** para cadastro, login, sessões e logout.
 
-## Desenvolvimento local
+## Iniciar React + backend local
 
-**Requisitos:** Node.js 20.19+ ou 22.12+ e npm. Recomendado: Node 22.
+**Pré-requisito:** Node.js **22.13+** (recomendado Node.js 22 LTS) e npm. A API usa o módulo `node:sqlite` integrado ao Node 22, sem servidor de banco ou pacote SQLite adicional.
 
 ```bash
 git clone https://github.com/Georlan/memory.git
@@ -13,61 +13,106 @@ npm install
 npm run dev
 ```
 
-Abra o endereço mostrado no terminal (normalmente **http://localhost:5173/**). O servidor Vite tem hot reload.
+Acesse **http://127.0.0.1:5173/**. O comando inicia automaticamente:
 
-Se você já tem o repositório clonado e antes executava `python3 -m http.server 8000`, pare aquele servidor com **Ctrl+C** e agora use:
+- **Frontend:** Vite em `127.0.0.1:5173`
+- **Backend:** API Node HTTP em `127.0.0.1:3001`
+- **Banco:** arquivo `data/pares.sqlite`, criado automaticamente
+
+**Se já havia clonado o jogo:**
 
 ```bash
+cd memory
 git pull origin main
 npm install
 npm run dev
 ```
 
-## Produção
+Pare o servidor Python antigo com `Ctrl+C` antes de começar. Para interromper o ambiente React + API, pressione `Ctrl+C` no terminal do `npm run dev`.
+
+## Testar localmente
 
 ```bash
+npm test
 npm run build
 npm run preview
 ```
 
-`npm run build` compila uma versão estática na pasta `dist/`. `npm run preview` permite conferir o build localmente.
+`npm test` executa uma bateria HTTP real usando SQLite temporário: valida cadastro, senha com hash, tentativas inválidas, login, cookie HttpOnly, sessão após reiniciar o servidor e logout. O teste apaga o banco temporário ao finalizar.
 
-### Deploy no Cloudflare Pages
+Você também pode conferir a API ligada:
 
-Conecte `Georlan/memory` no Cloudflare Pages, com estas configurações:
+```bash
+curl http://127.0.0.1:3001/api/health
+```
+
+Deve responder `{"ok":true,"database":"sqlite"}`.
+
+## Como funciona a autenticação
+
+1. No modo desenvolvimento, a primeira tela pede login ou criação de conta.
+2. Um novo usuário é salvo no SQLite com `name`, `email`, hash **scrypt** da senha e salt aleatório. **A senha original não é salva.**
+3. A API cria uma sessão com token aleatório; apenas o **hash do token** fica no SQLite.
+4. O navegador recebe um cookie `HttpOnly; SameSite=Strict`, válido por sete dias; `GET /api/auth/me` restaura a sessão ao atualizar a página.
+5. `POST /api/auth/logout` revoga a sessão no banco.
+
+Rotas disponíveis:
+
+| Método | Rota | Finalidade |
+|---|---|---|
+| GET | `/api/health` | Verifica se API está ativa |
+| POST | `/api/auth/register` | Cria conta e sessão |
+| POST | `/api/auth/login` | Valida email/senha e cria sessão |
+| GET | `/api/auth/me` | Retorna usuário autenticado |
+| POST | `/api/auth/logout` | Revoga o token |
+
+O Vite encaminha `/api` para o backend na porta 3001. O backend escuta apenas em `127.0.0.1`, sem CORS público, e valida origem das requisições de escrita. Há validação básica, limite de tamanho do corpo e rate limiting em memória para login/cadastro.
+
+O banco está em `data/pares.sqlite`, que é ignorado pelo Git. **Não envie esse arquivo ao GitHub**. Para reiniciar todas as contas locais, pare o servidor e exclua a pasta `data/` (isso apaga usuários e sessões locais).
+
+**Nesta etapa o login é um experimento local, não uma autenticação de produção.** Para implantação real, ainda serão necessários HTTPS, definição de domínio/API, proteção CSRF e antiabuso reforçadas, procedimentos de backup/recuperação e gestão de credenciais. O placar permanece no `localStorage` do navegador e ainda não é associado ao usuário do SQLite.
+
+## Cloudflare Pages (apenas frontend por enquanto)
+
+Para não interromper o jogo já hospedado, a autenticação é habilitada por padrão **somente em desenvolvimento**. O build de produção mantém o jogo público sem solicitar login, já que o Cloudflare Pages não executa esta API local nem armazena o SQLite do computador.
+
+Se futuramente você configurar uma API hospedada com banco persistente, será possível ativar a interface de login no build usando `VITE_AUTH_ENABLED=true`, **mas não faça isso antes de hospedar a API**.
+
+Configuração Cloudflare Pages:
 
 | Campo | Valor |
 |---|---|
-| Framework preset | React (Vite) ou Vite |
+| Framework preset | React (Vite) / Vite |
 | Production branch | `main` |
-| Root directory | raiz do repositório (padrão) |
+| Root directory | Raiz do repositório |
 | Build command | `npm run build` |
 | Build output directory | `dist` |
-| Node.js | 22 (o projeto inclui `.node-version`) |
+| Node.js | 22 |
 
-**Importante:** se o projeto Cloudflare Pages foi configurado antes da migração como site HTML puro (`exit 0` e `.`), altere os campos acima e execute novamente o deploy. O Cloudflare instala as dependências do `package.json` durante o build.
+## Scripts
 
-O jogo continua sendo um site estático, **não precisa de servidor de backend** para ser hospedado.
+| Comando | Ação |
+|---|---|
+| `npm run dev` | Inicia frontend e API local juntos |
+| `npm run dev:client` | Inicia somente o Vite |
+| `npm run dev:server` | Inicia somente a API SQLite |
+| `npm test` | Roda testes de integração com SQLite |
+| `npm run build` | Compila frontend para `dist/` |
+| `npm run preview` | Prévia do build estático (sem API) |
 
-## Funcionalidades
-
-- 3 níveis de dificuldade (6, 8 e 10 pares).
-- Cartas com animação de virada e tema de automobilismo.
-- Pontuação: +100 por par, −15 por erro e −5 por 10 segundos decorridos; nunca fica abaixo de zero.
-- Cronômetro, progresso, tela de vitória e sons opcionais.
-- Recordes por dificuldade guardados no `localStorage` (sem login ou banco).
-- Interface responsiva, controles por teclado, textos de acessibilidade e suporte a movimento reduzido.
-
-## Estrutura do projeto
+## Estrutura
 
 ```text
-index.html               Ponto de entrada do Vite
-src/main.jsx             Montagem da aplicação React
-src/App.jsx              Interface, estado e lógica React do jogo
-styles.css               Design responsivo de automobilismo
-assets/racer-art.svg     Ilustração vetorial original
-vite.config.js           Configuração do bundler
-package.json             Dependências e scripts npm
+index.html              Entrada do Vite
+src/main.jsx            React Root
+src/App.jsx             Jogo da memória
+src/AuthGate.jsx        Login, cadastro e controle de sessão
+src/auth.css            Layout da área de login
+styles.css              Identidade de automobilismo
+assets/racer-art.svg    Arte vetorial
+vite.config.js          Proxy /api e configuração Vite
+server/index.mjs        Backend Node + SQLite
+server/auth.test.mjs    Testes HTTP com SQLite temporário
+scripts/dev.mjs         Inicialização dos dois servidores
+data/pares.sqlite       Banco local, criado na primeira execução (ignorado pelo Git)
 ```
-
-A arte em SVG é original e usa a linguagem visual da referência enviada, sem replicar logotipos comerciais.
