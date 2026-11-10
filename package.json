@@ -11,7 +11,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:smoke": "node scripts/dev-smoke.mjs",
-    "start": "node server/index.mjs",
+    "start": "NODE_ENV=production node server/index.mjs",
     "test:prod": "node scripts/prod-smoke.mjs"
   },
   "engines": {
