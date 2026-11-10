@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./auth.css";
+import racerArt from "../assets/racer-art.svg";
 
 const ENABLED = import.meta.env.VITE_AUTH_ENABLED === "true" ||
   (import.meta.env.DEV && import.meta.env.VITE_AUTH_ENABLED !== "false");
@@ -115,7 +116,7 @@ export default function AuthGate({ children }) {
           <p>Crie seu perfil de piloto ou acesse sua conta para entrar na pista da memória.</p>
           <div className="auth-poster-foot">FOCO / REFLEXO / VELOCIDADE</div>
         </div>
-        <img className="auth-racer" src="/assets/racer-art.svg" alt="" aria-hidden="true" />
+        <img className="auth-racer" src={racerArt} alt="" aria-hidden="true" />
       </section>
       <section className="auth-form-panel" aria-labelledby="auth-title">
         <div className="auth-overline">ÁREA DO PILOTO / 001</div>
