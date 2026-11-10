@@ -10,7 +10,9 @@
     "test": "node --test server/*.test.mjs",
     "build": "vite build",
     "preview": "vite preview",
-    "test:smoke": "node scripts/dev-smoke.mjs"
+    "test:smoke": "node scripts/dev-smoke.mjs",
+    "start": "node server/index.mjs",
+    "test:prod": "node scripts/prod-smoke.mjs"
   },
   "engines": {
     "node": ">=22.13.0 <23"
