@@ -9,7 +9,8 @@
     "dev:server": "node server/index.mjs",
     "test": "node --test server/*.test.mjs",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:smoke": "node scripts/dev-smoke.mjs"
   },
   "engines": {
     "node": ">=22.13.0 <23"
