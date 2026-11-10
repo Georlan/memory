@@ -1,6 +1,6 @@
 # PARES — Sua mente. Sem freios.
 
-Jogo da memória em **React + Vite** com estética automobilística. A fase experimental inclui uma **API Node.js local** e banco **SQLite real** para cadastro, login, sessões e logout.
+Jogo da memória em **React + Vite** com estética automobilística. Inclui uma **API Node.js** e banco **SQLite real** para cadastro, login, sessões e logout. No desenvolvimento usa um arquivo local; no Railway usa um volume persistente.
 
 ## Iniciar React + backend local
 
@@ -36,6 +36,7 @@ Pare o servidor Python antigo com `Ctrl+C` antes de começar. Para interromper o
 npm test
 npm run test:smoke
 npm run build
+npm run test:prod
 npm run preview
 ```
 
@@ -50,6 +51,8 @@ curl http://127.0.0.1:3001/api/health
 ```
 
 Deve responder `{"ok":true,"database":"sqlite"}`.
+
+Após compilar, `npm run test:prod` inicia o servidor no modo de produção com um SQLite descartável, verifica a entrega do React, cookies `Secure`, bloqueio de origem, login/logout e persistência após reiniciar.
 
 ## Como funciona a autenticação
 
@@ -69,19 +72,34 @@ Rotas disponíveis:
 | GET | `/api/auth/me` | Retorna usuário autenticado |
 | POST | `/api/auth/logout` | Revoga o token |
 
-O Vite encaminha `/api` para o backend na porta 3001. O backend escuta apenas em `127.0.0.1`, sem CORS público, e valida origem das requisições de escrita. Há validação básica, limite de tamanho do corpo e rate limiting em memória para login/cadastro.
+O Vite encaminha `/api` para o backend na porta 3001. Em desenvolvimento o backend escuta apenas em `127.0.0.1`; em produção, escuta em `0.0.0.0` na porta `PORT` disponibilizada pelo Railway. O frontend e a API devem estar na mesma origem HTTPS. As requisições de escrita verificam `Origin` contra `APP_ORIGIN`. Há validação básica, limite de tamanho do corpo e rate limiting em memória para login/cadastro.
 
 O banco está em `data/pares.sqlite`, que é ignorado pelo Git. **Não envie esse arquivo ao GitHub**. Para reiniciar todas as contas locais, pare o servidor e exclua a pasta `data/` (isso apaga usuários e sessões locais).
 
-**Nesta etapa o login é um experimento local, não uma autenticação de produção.** Para implantação real, ainda serão necessários HTTPS, definição de domínio/API, proteção CSRF e antiabuso reforçadas, procedimentos de backup/recuperação e gestão de credenciais. O placar permanece no `localStorage` do navegador e ainda não é associado ao usuário do SQLite.
+**Limitações:** esta é a primeira implantação do login. Os cookies usam `HttpOnly; SameSite=Strict; Secure` em produção e a API verifica a origem, mas ainda é necessário evoluir antiabuso distribuído, recuperação de senha, observabilidade e backup automatizado antes de ampliar a base de usuários. O placar permanece no `localStorage` do navegador e ainda não é associado à conta do SQLite. O banco do computador **não é migrado automaticamente** para o Railway. Contas locais precisarão ser criadas novamente no ambiente remoto, salvo migração futura explícita e segura.
 
-## Cloudflare Pages (apenas frontend por enquanto)
+## Hospedagem no Railway — aplicação com login
 
-Para não interromper o jogo já hospedado, a autenticação é habilitada por padrão **somente em desenvolvimento**. O build de produção mantém o jogo público sem solicitar login, já que o Cloudflare Pages não executa esta API local nem armazena o SQLite do computador.
+O serviço `memory` do projeto Railway `radiant-encouragement` usa **um único servidor Node** para entregar os arquivos compilados do React e responder às rotas `/api` na **mesma origem HTTPS**. O SQLite grava em um volume persistente montado em `/data`.
 
-Se futuramente você configurar uma API hospedada com banco persistente, será possível ativar a interface de login no build usando `VITE_AUTH_ENABLED=true`, **mas não faça isso antes de hospedar a API**.
+- **Build:** `npm run build`, gera `dist/`
+- **Start:** `npm run start`, executa Node.js com `NODE_ENV=production`
+- **Health check:** `/api/health` ou `/health`
+- **Volume persistente:** montar em `/data` (uma réplica e uma região)
+- **Variáveis do serviço:** `SQLITE_PATH=/data/pares.sqlite`, `VITE_AUTH_ENABLED=true`, `APP_ORIGIN=https://<dominio-publico-do-railway>`
+- **Porta:** Railway injeta `PORT` ou é possível configurar `PORT=3001`
 
-Configuração Cloudflare Pages:
+`VITE_AUTH_ENABLED` é uma flag compilada pelo Vite; deve estar definida **antes do build** para exibir a tela de login no site hospedado. O valor não é segredo. `APP_ORIGIN` deve coincidir exatamente com a URL HTTPS do app, sem barra final.
+
+**Atenção:** nunca use `npm run dev` em produção; esse comando inicia dois processos de desenvolvimento e não serve o build com segurança. Não hospede o SQLite em disco efêmero. Use um único replica com volume e cópias de segurança antes de aceitar dados importantes.
+
+### Cloudflare Pages (frontend público separado)
+
+Cloudflare Pages continua podendo publicar o frontend estático, mas **não executa a API Node nem acessa o SQLite do Railway**. Se houver um deploy Cloudflare existente sem proxy seguro de `/api`, deixe `VITE_AUTH_ENABLED` desativado nesse deploy até configurar o encaminhamento HTTPS de mesma origem para o Railway.
+
+Para que o domínio final seja gerenciado pelo Cloudflare, você pode futuramente apontar um domínio personalizado para o serviço Railway após configurar e verificar o DNS. A origem exata deverá ser adicionada em `APP_ORIGIN` e a autenticação testada novamente.
+
+Configuração do Cloudflare Pages para o frontend estático separado:
 
 | Campo | Valor |
 |---|---|
@@ -102,6 +120,8 @@ Configuração Cloudflare Pages:
 | `npm test` | Roda testes de integração com SQLite |
 | `npm run test:smoke` | Testa `npm run dev`, frontend e proxy da API |
 | `npm run build` | Compila frontend para `dist/` |
+| `npm run start` | Inicia Node + frontend compilado em produção |
+| `npm run test:prod` | Smoke de produção HTTPS/cookies/SQLite |
 | `npm run preview` | Prévia do build estático (sem API) |
 
 ## Estrutura
@@ -119,5 +139,6 @@ server/index.mjs        Backend Node + SQLite
 server/auth.test.mjs    Testes HTTP com SQLite temporário
 scripts/dev.mjs         Inicialização dos dois servidores
 scripts/dev-smoke.mjs   Teste de inicialização e proxy
+scripts/prod-smoke.mjs  Smoke de produção após npm run build
 data/pares.sqlite       Banco local, criado na primeira execução (ignorado pelo Git)
 ```

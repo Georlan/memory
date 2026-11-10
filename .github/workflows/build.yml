@@ -25,3 +25,5 @@ jobs:
         run: npm run test:smoke
       - name: Build production assets
         run: npm run build
+      - name: Smoke test production React, HTTPS cookie and SQLite
+        run: npm run test:prod

@@ -1,7 +1,8 @@
 import { createServer } from "node:http";
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { readFile } from "node:fs/promises";
+import { dirname, extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomBytes, scrypt as scryptCallback, createHash, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
@@ -10,13 +11,60 @@ const scrypt = promisify(scryptCallback);
 const SESSION_AGE_SECONDS = 60 * 60 * 24 * 7;
 const MAX_BODY_BYTES = 16_384;
 const COOKIE_NAME = "pares_session";
+const DIST_DIR = resolve(process.env.STATIC_DIR || "dist");
+const CONTENT_TYPES = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".ico": "image/x-icon",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".json": "application/json; charset=utf-8"
+};
+
+async function serveFrontend(req, res, pathname, distDir = DIST_DIR) {
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    return respond(res, 405, { error: "Método não permitido." }, { Allow: "GET, HEAD" });
+  }
+  const fileName = pathname === "/" ? "index.html" : pathname.slice(1);
+  const candidate = resolve(distDir, fileName);
+  if (candidate !== distDir && !candidate.startsWith(distDir + sep)) {
+    return respond(res, 404, { error: "Arquivo não encontrado." });
+  }
+  // Rotas do React retornam index.html; URLs de assets inexistentes retornam 404.
+  const pathToRead = pathname === "/" || pathname === "/index.html" ||
+    ((req.headers.accept || "").includes("text/html") && !pathname.includes("."))
+    ? resolve(distDir, "index.html") : candidate;
+  try {
+    const data = await readFile(pathToRead);
+    res.writeHead(200, {
+      "Content-Type": CONTENT_TYPES[extname(pathToRead)] || "application/octet-stream",
+      "Cache-Control": pathToRead.includes(sep + "assets" + sep)
+        ? "public, max-age=31536000, immutable" : "no-cache",
+      "X-Content-Type-Options": "nosniff"
+    });
+    return res.end(req.method === "HEAD" ? undefined : data);
+  } catch (error) {
+    if (error.code !== "ENOENT" && error.code !== "EISDIR") {
+      console.error("Falha ao servir arquivo estático:", error);
+      return respond(res, 500, { error: "Erro ao servir aplicação." });
+    }
+    return respond(res, 404, { error: "Arquivo não encontrado." });
+  }
+}
 const originAllowlist = new Set([
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   ...(process.env.APP_ORIGIN ? process.env.APP_ORIGIN.split(",").map(s => s.trim()) : [])
 ]);
 
-export function openDatabase(path = process.env.SQLITE_PATH || resolve("data/pares.sqlite")) {
+export function openDatabase(path = process.env.SQLITE_PATH ||
+  (process.env.NODE_ENV === "production" ? "/data/pares.sqlite" : resolve("data/pares.sqlite"))) {
   if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
   const db = new DatabaseSync(path);
   db.exec(`
@@ -118,7 +166,7 @@ function validUserInput(data, needsName) {
   return { email, name, password };
 }
 
-export function createAuthServer(db) {
+export function createAuthServer(db, { staticDir = null } = {}) {
   // Limite leve para desenvolvimento local; em produção usar proteção distribuída.
   const attempts = new Map();
   function rateLimited(req, route) {
@@ -147,9 +195,14 @@ export function createAuthServer(db) {
   return createServer(async (req, res) => {
     try {
       const pathname = new URL(req.url, "http://localhost").pathname;
-      if (!pathname.startsWith("/api/")) return respond(res, 404, { error: "Rota inexistente." });
-      if (req.method === "GET" && pathname === "/api/health") {
+      if (req.method === "GET" && (pathname === "/health" || pathname === "/api/health")) {
+        // Prova que o processo está vivo e que o banco está acessível.
+        db.prepare("SELECT 1 AS healthy").get();
         return respond(res, 200, { ok: true, database: "sqlite" });
+      }
+      if (!pathname.startsWith("/api/")) {
+        return staticDir ? await serveFrontend(req, res, pathname, staticDir) :
+          respond(res, 404, { error: "Rota inexistente." });
       }
       if (req.method === "GET" && pathname === "/api/auth/me") {
         const token = readCookie(req.headers.cookie);
@@ -219,12 +272,20 @@ export function createAuthServer(db) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const db = openDatabase();
-  const port = Number(process.env.API_PORT || 3001);
-  const server = createAuthServer(db);
-  server.listen(port, "127.0.0.1", () => {
-    console.log(`[API] SQLite local ativo em http://127.0.0.1:${port}`);
-    console.log(`[API] Banco: ${process.env.SQLITE_PATH || resolve("data/pares.sqlite")}`);
+  const isProduction = process.env.NODE_ENV === "production";
+  const databasePath = process.env.SQLITE_PATH ||
+    (isProduction ? "/data/pares.sqlite" : resolve("data/pares.sqlite"));
+  if (isProduction && !process.env.APP_ORIGIN) {
+    console.error("[API] APP_ORIGIN é obrigatório em produção.");
+    process.exit(1);
+  }
+  const db = openDatabase(databasePath);
+  const port = Number(process.env.PORT || process.env.API_PORT || 3001);
+  const host = isProduction ? "0.0.0.0" : "127.0.0.1";
+  const server = createAuthServer(db, { staticDir: isProduction ? DIST_DIR : null });
+  server.listen(port, host, () => {
+    console.log(`[API] PARES ouvindo em http://${host}:${port} (${isProduction ? "produção" : "local"})`);
+    console.log(`[API] SQLite: ${databasePath}`);
   });
   for (const signal of ["SIGINT", "SIGTERM"]) {
     process.on(signal, () => server.close(() => { db.close(); process.exit(0); }));
