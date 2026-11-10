@@ -17,7 +17,7 @@ async function apiRequest(path, payload, signal) {
     });
   } catch (error) {
     if (error.name === "AbortError") throw error;
-    throw new Error("API local indisponível. Execute npm run dev para iniciar React e SQLite.");
+    throw new Error("Servidor de autenticação indisponível. Tente novamente em instantes.");
   }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -107,11 +107,11 @@ export default function AuthGate({ children }) {
 
   return (
     <main className="auth-page">
-      <div className="auth-stripe" aria-hidden="true">PARES RACING CLUB　✳　AUTENTICAÇÃO LOCAL　✳　MEMORY GRAND PRIX</div>
+      <div className="auth-stripe" aria-hidden="true">PARES RACING CLUB　✳　AUTENTICAÇÃO SEGURA　✳　MEMORY GRAND PRIX</div>
       <section className="auth-poster" aria-labelledby="auth-title">
         <a className="auth-logo" href="./">PARES<span>.</span></a>
         <div className="auth-poster-copy">
-          <div className="auth-kicker">EDIÇÃO DE TESTE / SQLITE LOCAL</div>
+          <div className="auth-kicker">PARES RACING CLUB / ACESSO</div>
           <h1>SUA MENTE.<br /><em>SEM FREIOS.</em></h1>
           <p>Crie seu perfil de piloto ou acesse sua conta para entrar na pista da memória.</p>
           <div className="auth-poster-foot">FOCO / REFLEXO / VELOCIDADE</div>
@@ -126,7 +126,7 @@ export default function AuthGate({ children }) {
           <>
             <h2 id="auth-title">{mode === "register" ? "ENTRE PARA O GRID." : "VOLTE À PISTA."}</h2>
             <p className="auth-intro">{mode === "register"
-              ? "Cadastre seu perfil no banco SQLite deste computador."
+              ? "Cadastre seu perfil para acessar o jogo."
               : "Entre com seu email e senha para continuar sua corrida."}</p>
             <div className="auth-tabs" role="group" aria-label="Acesso">
               <button type="button" className={mode === "login" ? "selected" : ""} aria-pressed={mode === "login"} onClick={() => changeMode("login")}>ENTRAR</button>
@@ -149,7 +149,7 @@ export default function AuthGate({ children }) {
                 {busy ? "AGUARDE…" : mode === "register" ? "CRIAR CONTA" : "ENTRAR NA PISTA"} <span aria-hidden="true">↗</span>
               </button>
             </form>
-            <p className="auth-local-note">Seus dados ficam apenas no SQLite local. Senhas são armazenadas com hash scrypt; o navegador recebe um cookie de sessão HttpOnly. Recordes do jogo ainda são locais ao navegador.</p>
+            <p className="auth-local-note">Sua conta é protegida por senha com hash scrypt e sessão HttpOnly. Seus recordes ainda ficam salvos neste navegador.</p>
           </>
         )}
       </section>
