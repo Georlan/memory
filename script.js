@@ -2,16 +2,16 @@
 
 (() => {
   const ITEMS = [
-    { id: "planet", icon: "🪐", name: "planeta", color: "#b8a4ff" },
-    { id: "rocket", icon: "🚀", name: "foguete", color: "#ffb7b1" },
-    { id: "star", icon: "🌟", name: "estrela", color: "#ffe197" },
-    { id: "moon", icon: "🌙", name: "lua", color: "#c8d5ff" },
-    { id: "alien", icon: "👽", name: "alienígena", color: "#9ae5b2" },
-    { id: "comet", icon: "☄️", name: "cometa", color: "#ffb99d" },
-    { id: "earth", icon: "🌎", name: "Terra", color: "#7ad5d7" },
-    { id: "satellite", icon: "🛰️", name: "satélite", color: "#bcc6e7" },
-    { id: "sun", icon: "☀️", name: "sol", color: "#f8d080" },
-    { id: "ufo", icon: "🛸", name: "disco voador", color: "#bde0ff" }
+    { id: "formula", icon: "🏎️", name: "carro de corrida", color: "#d81c31" },
+    { id: "finish", icon: "🏁", name: "bandeira quadriculada", color: "#1e293a" },
+    { id: "cup", icon: "🏆", name: "troféu", color: "#d19d3d" },
+    { id: "bolt", icon: "⚡", name: "raio", color: "#e7a32d" },
+    { id: "lights", icon: "🚦", name: "semáforo", color: "#a4222f" },
+    { id: "tools", icon: "🔧", name: "ferramenta", color: "#3c5067" },
+    { id: "fire", icon: "🔥", name: "chama", color: "#dd3f29" },
+    { id: "wheel", icon: "🛞", name: "pneu", color: "#293545" },
+    { id: "fuel", icon: "⛽", name: "combustível", color: "#b72a32" },
+    { id: "glove", icon: "🧤", name: "luva", color: "#df6c40" }
   ];
 
   const DIFFICULTY = { easy: 6, medium: 8, hard: 10 };
@@ -168,10 +168,10 @@
     front.className = "card-face card-front";
     const glyph = document.createElement("span");
     glyph.className = "card-glyph";
-    glyph.textContent = "✳";
+    glyph.textContent = "P";
     const corner = document.createElement("span");
     corner.className = "card-corner";
-    corner.textContent = "P.";
+    corner.textContent = "R/01";
     front.append(glyph, corner);
 
     const back = document.createElement("span");
@@ -206,7 +206,7 @@
 
     if (firstCard === null) {
       firstCard = { button, item, number };
-      setMessage("Boa! Agora encontre a carta com o mesmo símbolo.");
+      setMessage("Primeira curva! Encontre a outra carta do par.");
       updateDisplay();
       return;
     }
@@ -226,14 +226,14 @@
       firstCard = null;
       secondCard = null;
       sound("match");
-      setMessage("Par encontrado! Continue assim.");
+      setMessage("Ultrapassagem perfeita! Mais um par na conta.");
       updateDisplay();
       if (matches === totalPairs) finishGame();
     } else {
       mistakes += 1;
       locked = true;
       sound("miss");
-      setMessage("Ainda não! Memorize as posições e tente de novo.");
+      setMessage("Derrapou! Memorize as posições e tente novamente.");
       updateDisplay();
       hideTimeout = window.setTimeout(() => {
         for (const selected of [firstCard, secondCard]) {
@@ -244,7 +244,7 @@
         secondCard = null;
         locked = false;
         hideTimeout = null;
-        setMessage("Sua vez! Vire mais duas cartas.");
+        setMessage("Pista livre! Escolha suas próximas duas cartas.");
       }, 950);
     }
   }
@@ -283,9 +283,9 @@
     $("winTime").textContent = formatTime(elapsed);
     $("winScore").textContent = String(score);
     $("winMessage").textContent = isRecord
-      ? "Novo recorde! Você superou sua melhor marca. ✨"
-      : "Todas as cartas encontradas! Que tal superar sua pontuação?";
-    setMessage("Você venceu! Todos os pares foram encontrados.");
+      ? "Volta histórica! Novo recorde pessoal. 🏆"
+      : "Você venceu! Que tal bater esse tempo na próxima volta?";
+    setMessage("Bandeira quadriculada! Você concluiu a corrida.");
     winTimeout = window.setTimeout(() => {
       makeConfetti();
       if (!dialog.open) dialog.showModal();
