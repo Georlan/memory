@@ -1,52 +1,73 @@
 # PARES — Sua mente. Sem freios.
 
-Jogo da memória interativo com identidade visual de **pôster de automobilismo**: fundo creme com textura de papel, vermelho de corrida, azul-preto, cortes diagonais, lettering condensado e uma ilustração vetorial original de um piloto.
+Um jogo da memória responsivo com estética de pôster automobilístico, agora feito com **React + Vite**.
 
-O redesign foi inspirado na **linguagem visual** de uma referência enviada pelo usuário, sem reproduzir as marcas e os patrocinadores presentes nela. A ilustração está em `assets/racer-art.svg`.
+## Desenvolvimento local
 
-## Rodar localmente
-
-Você só precisa de um navegador moderno. Não existe backend nem etapa de build.
+**Requisitos:** Node.js 20.19+ ou 22.12+ e npm. Recomendado: Node 22.
 
 ```bash
 git clone https://github.com/Georlan/memory.git
 cd memory
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-Abra **http://localhost:8000**.
+Abra o endereço mostrado no terminal (normalmente **http://localhost:5173/**). O servidor Vite tem hot reload.
 
-Se o projeto já estiver clonado:
+Se você já tem o repositório clonado e antes executava `python3 -m http.server 8000`, pare aquele servidor com **Ctrl+C** e agora use:
 
 ```bash
-cd memory
 git pull origin main
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-Se o servidor Python **já estiver em execução**, não execute outro servidor: basta fazer `git pull origin main` em um segundo terminal e atualizar a página com **Ctrl+Shift+R**.
+## Produção
 
-Alternativa: abrir `index.html` diretamente no navegador. As fontes externas são opcionais: com a internet indisponível, o sistema usa fontes locais de fallback.
+```bash
+npm run build
+npm run preview
+```
 
-## Como jogar
+`npm run build` compila uma versão estática na pasta `dist/`. `npm run preview` permite conferir o build localmente.
 
-Vire duas cartas por vez. Pares iguais permanecem revelados. A rodada termina quando todos os pares forem descobertos.
+### Deploy no Cloudflare Pages
 
-- **Iniciante:** 6 pares; **Piloto:** 8 pares; **Lenda:** 10 pares.
-- Cronômetro inicia no primeiro clique.
-- **Pontuação:** +100 por par; −15 por tentativa errada; −5 por cada 10 segundos decorridos. O placar nunca fica negativo.
-- Recordes por dificuldade salvos apenas no seu navegador via `localStorage`.
-- Animações de virada, som opcional, progresso, tela de vitória e interface responsiva.
-- Acessibilidade: botões utilizáveis com teclado, mensagens de status e opção de movimento reduzido.
+Conecte `Georlan/memory` no Cloudflare Pages, com estas configurações:
 
-## Estrutura
+| Campo | Valor |
+|---|---|
+| Framework preset | React (Vite) ou Vite |
+| Production branch | `main` |
+| Root directory | raiz do repositório (padrão) |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Node.js | 22 (o projeto inclui `.node-version`) |
+
+**Importante:** se o projeto Cloudflare Pages foi configurado antes da migração como site HTML puro (`exit 0` e `.`), altere os campos acima e execute novamente o deploy. O Cloudflare instala as dependências do `package.json` durante o build.
+
+O jogo continua sendo um site estático, **não precisa de servidor de backend** para ser hospedado.
+
+## Funcionalidades
+
+- 3 níveis de dificuldade (6, 8 e 10 pares).
+- Cartas com animação de virada e tema de automobilismo.
+- Pontuação: +100 por par, −15 por erro e −5 por 10 segundos decorridos; nunca fica abaixo de zero.
+- Cronômetro, progresso, tela de vitória e sons opcionais.
+- Recordes por dificuldade guardados no `localStorage` (sem login ou banco).
+- Interface responsiva, controles por teclado, textos de acessibilidade e suporte a movimento reduzido.
+
+## Estrutura do projeto
 
 ```text
-index.html            Interface da partida
-styles.css            Identidade visual e layout responsivo
-script.js             Lógica do jogo, cronômetro e recordes
-assets/racer-art.svg  Ilustração vetorial original
-README.md             Instruções
+index.html               Ponto de entrada do Vite
+src/main.jsx             Montagem da aplicação React
+src/App.jsx              Interface, estado e lógica React do jogo
+styles.css               Design responsivo de automobilismo
+assets/racer-art.svg     Ilustração vetorial original
+vite.config.js           Configuração do bundler
+package.json             Dependências e scripts npm
 ```
 
-Feito com HTML, CSS e JavaScript, sem frameworks, sem instalação de pacotes e sem integração de terceiros além do carregamento opcional de fontes do Google Fonts.
+A arte em SVG é original e usa a linguagem visual da referência enviada, sem replicar logotipos comerciais.

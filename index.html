@@ -1,134 +1,14 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5ebd6">
-  <meta name="description" content="PARES — a corrida contra a sua memória. Vire cartas, encontre pares e supere seu recorde.">
-  <title>PARES — Sua mente. Sem freios.</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="script.js" defer></script>
-</head>
-<body>
-  <div class="top-race-bar" aria-hidden="true">
-    <div class="top-race-track"><span>PARES RACING CLUB</span><span>✳</span><span>MEMORY GRAND PRIX</span><span>✳</span><span>FOCO • REFLEXO • VELOCIDADE</span><span>✳</span><span>PARES RACING CLUB</span></div>
-  </div>
-  <div class="site-wrap">
-    <header class="site-header">
-      <a href="./" class="brand" aria-label="PARES, início">
-        <span class="brand-mark" aria-hidden="true">P<span>✳</span></span>
-        <span class="brand-word">PARES<span>.</span></span>
-      </a>
-      <div class="header-middle" aria-hidden="true"><span class="line-flag"></span> DESAFIO DE MEMÓRIA / EDIÇÃO 01</div>
-      <button id="soundToggle" class="sound-toggle" type="button" aria-label="Ativar som" aria-pressed="false" title="Ativar ou desativar som">
-        <svg id="soundIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M11 5 6 9H3v6h3l5 4V5Z"></path><path class="sound-wave" d="M15 9a5 5 0 0 1 0 6"></path><path class="sound-wave" d="M18 6a9 9 0 0 1 0 12"></path><path class="sound-mute" d="m16 9 5 6m0-6-5 6"></path>
-        </svg>
-        <span id="soundLabel">Som desligado</span>
-        <span class="sound-tick" aria-hidden="true"></span>
-      </button>
-    </header>
-
-    <main>
-      <section class="hero" aria-labelledby="pageTitle">
-        <div class="hero-ink hero-ink-a" aria-hidden="true"></div>
-        <div class="hero-ink hero-ink-b" aria-hidden="true"></div>
-        <div class="hero-copy">
-          <div class="hero-eyebrow"><span class="hero-indicator" aria-hidden="true"></span> JOGO DA MEMÓRIA <span class="eyebrow-separator">/</span> VOL. 001</div>
-          <h1 id="pageTitle">SUA MENTE.<br><span>SEM FREIOS.</span></h1>
-          <p>Na pista da memória, cada segundo conta. Revele as cartas, encontre os pares e prove que você não perde o foco.</p>
-          <a href="#arena" class="hero-cta">ENTRAR NA PISTA <span aria-hidden="true">↘</span></a>
-          <div class="hero-footnote"><span class="mini-star" aria-hidden="true">✳</span> VELOCIDADE É NADA SEM CONCENTRAÇÃO.</div>
-        </div>
-        <div class="hero-art" aria-hidden="true">
-          <div class="hero-art-number">01</div>
-          <img src="assets/racer-art.svg" alt="" width="940" height="790">
-          <span class="art-caption">MIND / <b>RACER</b></span>
-          <span class="art-crosshair art-crosshair-a">+</span>
-          <span class="art-crosshair art-crosshair-b">+</span>
-        </div>
-        <div class="hero-side-label" aria-hidden="true">KEEP YOUR EYES ON THE GAME — 001</div>
-      </section>
-
-      <div class="section-break" aria-hidden="true">
-        <span class="section-break-dark">A CORRIDA COMEÇA AQUI</span>
-        <span class="section-break-lines">///// ///// ///// ///// /////</span>
-        <span class="section-break-red">START YOUR ENGINE <b>↗</b></span>
-      </div>
-
-      <section id="arena" class="game-layout" aria-label="Jogo da memória">
-        <div class="play-panel">
-          <div class="panel-heading">
-            <div>
-              <div class="section-kicker"><span class="small-flag" aria-hidden="true">✳</span> GRID DE LARGADA / <strong>LIVE</strong></div>
-              <h2>ENCONTRE OS <em>PARES.</em> <span id="boardCount" class="pair-total">0/6</span></h2>
-            </div>
-            <button id="shuffleButton" class="subtle-button" type="button" title="Recomeçar com as cartas embaralhadas"><span aria-hidden="true">↻</span> NOVA CORRIDA</button>
-          </div>
-          <div class="board-grid-frame">
-            <div class="board-rail rail-top" aria-hidden="true"><span>START</span><span>MEMORY / 001</span></div>
-            <div id="board" class="board level-easy" role="group" aria-label="Cartas da memória"></div>
-            <div class="board-rail rail-bottom" aria-hidden="true"><span>FIND YOUR MATCH //</span><span>FINISH</span></div>
-          </div>
-          <div class="board-footer">
-            <span class="tip-icon" aria-hidden="true">✦</span>
-            <span id="gameMessage" role="status" aria-live="polite">Vire duas cartas para começar a jogar.</span>
-            <span class="board-foot-tag">PARES RACING CLUB</span>
-          </div>
-        </div>
-
-        <aside class="game-sidebar" aria-label="Configurações e resultados">
-          <section class="side-card difficulty-card">
-            <div class="side-overline"><span>01</span> / AJUSTE O DESAFIO</div>
-            <div class="sidebar-title-line"><h2>ESCOLHA A <em>MARCHA.</em></h2><span aria-hidden="true">↗</span></div>
-            <p>Quanto maior a velocidade, maior o desafio.</p>
-            <div class="difficulty-options" role="group" aria-label="Dificuldade">
-              <button type="button" class="difficulty-button active" data-level="easy" aria-pressed="true"><span class="level-code">01</span><span class="level-name">INICIANTE</span><small>6 PARES</small><span class="level-chevron" aria-hidden="true">↗</span></button>
-              <button type="button" class="difficulty-button" data-level="medium" aria-pressed="false"><span class="level-code">02</span><span class="level-name">PILOTO</span><small>8 PARES</small><span class="level-chevron" aria-hidden="true">↗</span></button>
-              <button type="button" class="difficulty-button" data-level="hard" aria-pressed="false"><span class="level-code">03</span><span class="level-name">LENDA</span><small>10 PARES</small><span class="level-chevron" aria-hidden="true">↗</span></button>
-            </div>
-          </section>
-
-          <section class="side-card stats-card">
-            <div class="side-overline"><span>02</span> / TELEMETRIA</div>
-            <div class="sidebar-title-line"><h2>NO <em>LIMITE.</em></h2><span class="stats-star" aria-hidden="true">✳</span></div>
-            <div class="stats-grid">
-              <div class="stat-box"><span class="stat-label">JOGADAS</span><strong id="movesStat" class="stat-number">00</strong></div>
-              <div class="stat-box"><span class="stat-label">TEMPO</span><strong id="timeStat" class="stat-number" aria-label="Tempo decorrido">00:00</strong></div>
-              <div class="stat-box"><span class="stat-label">ACERTOS</span><strong id="matchesStat" class="stat-number">00</strong></div>
-              <div class="stat-box"><span class="stat-label">PONTOS</span><strong id="scoreStat" class="stat-number accent-number">000</strong></div>
-            </div>
-            <div class="progress-heading"><span>PROGRESSO DA PISTA</span><strong id="progressText">0%</strong></div>
-            <div class="progress-track" role="progressbar" aria-label="Pares encontrados" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressTrack"><span id="progressFill"></span></div>
-            <div class="record-box"><span class="record-icon" aria-hidden="true">★</span><div><small>RECORDE PESSOAL</small><strong id="bestScore">Ainda não há recorde</strong></div></div>
-          </section>
-
-          <button id="restartButton" type="button" class="restart-button"><span>REINICIAR CORRIDA</span><span class="restart-arrow" aria-hidden="true">↗</span></button>
-          <p class="sidebar-note">+100 pontos por par • −15 por erro • −5 a cada 10 segundos. Seu melhor resultado fica salvo neste navegador.</p>
-        </aside>
-      </section>
-    </main>
-    <footer class="site-footer">
-      <span class="footer-brand">PARES<span>.</span></span>
-      <span>A MEMÓRIA NUNCA SAI DE PISTA.</span>
-      <span>© 2026 / MEMORY RACING CLUB <span class="footer-star" aria-hidden="true">✳</span></span>
-    </footer>
-  </div>
-
-  <dialog id="winDialog" class="win-dialog" aria-labelledby="winTitle">
-    <div id="confetti" class="confetti" aria-hidden="true"></div>
-    <div class="win-content">
-      <span class="win-emblem" aria-hidden="true">★</span>
-      <span class="win-kicker">BANDEIRA QUADRICULADA / PARABÉNS</span>
-      <h2 id="winTitle">VOCÊ CRUZOU<br><em>A LINHA DE CHEGADA.</em></h2>
-      <p id="winMessage">Sua memória está afiada. Que tal mais uma rodada?</p>
-      <div class="win-stats">
-        <div><span>JOGADAS</span><strong id="winMoves">0</strong></div>
-        <div><span>TEMPO</span><strong id="winTime">00:00</strong></div>
-        <div><span>PONTOS</span><strong id="winScore">0</strong></div>
-      </div>
-      <button id="playAgainButton" class="play-again-button" type="button">ACELERAR DE NOVO <span aria-hidden="true">↗</span></button>
-    </div>
-  </dialog>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7eedc" />
+    <meta name="description" content="PARES — Sua mente. Sem freios. Jogo da memória interativo com três dificuldades, recordes e estilo de automobilismo." />
+    <title>PARES — Sua mente. Sem freios.</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
