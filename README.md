@@ -2,6 +2,67 @@
 
 Jogo da memória em **React + Vite** com estética automobilística. Inclui uma **API Node.js** e banco **SQLite real** para cadastro, login, sessões e logout. No desenvolvimento usa um arquivo local; no Railway usa um volume persistente.
 
+## Integração Cloudflare Pages + Railway + Supabase (versão hospedada)
+
+**Três serviços, uma única aplicação de usuário:**
+
+- **Cloudflare Pages** publica React/Vite e usa `functions/api/[[path]].js` como proxy de **rotas permitidas** para o Railway. O proxy não aceita destinos arbitrários, não encaminha cookies do SQLite e exige mesma origem em operações de escrita.
+- **Supabase** (projeto `memory`, ref `juiegqemecodojunlbcc`) gerencia cadastro, confirmação de email, login, sessão e duas tabelas com RLS: `public.pares_profiles` e `public.pares_best_scores`.
+- **Railway** verifica cada bearer token consultando Supabase Auth e salva/consulta as melhores pontuações via PostgREST **com o JWT do próprio jogador**, respeitando as regras RLS. Não precisa nem deve receber a chave `service_role` ou segredo administrativo.
+
+O cliente Supabase usa apenas a chave **publishable**, que é pública por definição. Nunca coloque uma chave `secret`, `service_role` ou senha de banco em variáveis `VITE_*`, arquivos JS ou no Cloudflare Pages.
+
+### Configuração Railway (serviço memory)
+
+O Railway já fornece o frontend compilado e a API Node na mesma origem, com o SQLite antigo preservado no volume `/data`. Para ativar as novas rotas Supabase, defina:
+
+```text
+SUPABASE_URL=https://juiegqemecodojunlbcc.supabase.co
+SUPABASE_PUBLISHABLE_KEY=<chave pública do projeto Supabase>
+```
+
+As demais variáveis existentes (`APP_ORIGIN`, `PORT`, `SQLITE_PATH`) devem ser mantidas. Não precisa configurar uma conexão Postgres com senha, pois a API acessa o banco com o token verificado do usuário e o RLS.
+
+Checagens de produção:
+
+- `GET https://memory-production-6ff74d87.up.railway.app/api/health` — processo/SQLite legado.
+- `GET https://memory-production-6ff74d87.up.railway.app/api/supabase/status` — Supabase Auth alcançável.
+- `GET /api/supabase/me` — requer `Authorization: Bearer <access_token>`.
+- `GET /api/supabase/scores` — apenas melhores pontuações do usuário.
+- `PUT /api/supabase/scores` — salva seu próprio recorde; resultados enviados pelo navegador ainda **não são verificados no servidor** para rankings competitivos.
+
+### Configuração Cloudflare Pages
+
+Projeto Git conectado ao `Georlan/memory`. Use:
+
+| Configuração | Valor |
+|---|---|
+| Framework | React (Vite) |
+| Root directory | raiz |
+| Production branch | `main` |
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| Node.js | 22 |
+| Pages Functions | pasta `functions/api/[[path]].js` do repositório |
+
+**Não habilite** build `npm run dev` ou output `.` no Cloudflare. O deploy de Pages precisa incluir a pasta `functions`; se usar Workers Static Assets em vez de Pages, a ponte deve ser implementada na configuração correspondente.
+
+Para confirmar a ponte após o deploy, abra `https://SEU-SITE.pages.dev/api/supabase/status`, que deve retornar `{"ok":true,"provider":"supabase"}`.
+
+### Configuração Supabase Auth
+
+No painel **Authentication → URL Configuration**, defina a **Site URL** do domínio Cloudflare Pages que será seu endereço principal e adicione em **Redirect URLs** tanto a URL do Pages como a URL do Railway, se usar ambas para login. Sem isso, a confirmação por email pode redirecionar para localhost.
+
+O cadastro novo segue o fluxo de confirmação de email do projeto. Se o provedor SMTP gratuito atingir limites, configure um provedor SMTP antes de lançar para muitos usuários.
+
+### Migração e dados antigos
+
+O banco SQLite antigo continua no volume Railway e o `npm run dev` local continua usando SQLite, **sem apagar contas**. Os hashes scrypt e tokens SQLite **não são importados** para Supabase Auth: o usuário antigo precisará criar/confirmar uma conta Supabase (ou realizar um fluxo de recuperação de acesso futuro).
+
+**Melhores recordes** salvos em `localStorage` são lidos ao entrar na nova conta. Caso sejam melhores que os registros remotos, o cliente os envia à API Railway e os sincroniza com o Supabase. O banco ainda não é adequado a um ranking público competitivo, pois os resultados são informados pelo cliente.
+
+**Segurança e custo:** o projeto Supabase depende da cota/plano da organização, e o Railway pode interromper o serviço por cobrança pendente. Não divulgue o lançamento antes de confirmar login, email, RLS, deploy do Pages Function e cobrança.
+
 ## Iniciar React + backend local
 
 **Pré-requisito:** Node.js **22.13+** (recomendado Node.js 22 LTS) e npm. A API usa o módulo `node:sqlite` integrado ao Node 22, sem servidor de banco ou pacote SQLite adicional.

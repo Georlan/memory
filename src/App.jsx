@@ -77,6 +77,26 @@ function gameReducer(game, action) {
     status: "playing", message: "Derrapou! Memorize as posições e tente novamente." };
 }
 
+function isBetterScore(next, old) {
+  return !old || next.score > old.score ||
+    (next.score === old.score && next.elapsed < old.elapsed);
+}
+
+async function syncScore(token, difficulty, record) {
+  const response = await fetch("/api/supabase/scores", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+    body: JSON.stringify({
+      difficulty,
+      score: record.score,
+      elapsed_seconds: record.elapsed,
+      moves: record.moves
+    })
+  });
+  if (!response.ok) throw new Error("Sincronização indisponível: " + response.status);
+  return response.json();
+}
+
 function readRecords() {
   try {
     const value = JSON.parse(localStorage.getItem(RECORDS_KEY) || "{}");
@@ -99,7 +119,7 @@ const confettiPieces = Array.from({ length: 35 }, (_, i) => ({
   "--fall-angle": (i * 77) + "deg"
 }));
 
-export default function App() {
+export default function App({ supabaseSession = null }) {
   const [game, dispatch] = useReducer(gameReducer, "easy", createGame);
   const [records, setRecords] = useState(readRecords);
   const [isNewRecord, setIsNewRecord] = useState(false);
@@ -113,6 +133,47 @@ export default function App() {
   const score = Math.max(0, game.matched.length * 100 - game.mistakes * 15 -
     Math.floor(game.elapsed / 10) * 5);
   const bestRecord = records[game.level];
+
+  useEffect(() => {
+    const token = supabaseSession?.access_token;
+    if (!token) return undefined;
+    const controller = new AbortController();
+    async function loadRecords() {
+      try {
+        const response = await fetch("/api/supabase/scores", {
+          headers: { Authorization: "Bearer " + token },
+          signal: controller.signal
+        });
+        if (!response.ok) throw new Error("API de recordes indisponível");
+        const { records: remote } = await response.json();
+        if (controller.signal.aborted) return;
+        const local = readRecords();
+        const merged = { ...local };
+        for (const row of remote || []) {
+          const record = { score: row.score, elapsed: row.elapsed_seconds, moves: row.moves };
+          if (["easy", "medium", "hard"].includes(row.difficulty) &&
+              isBetterScore(record, merged[row.difficulty])) merged[row.difficulty] = record;
+        }
+        for (const level of ["easy", "medium", "hard"]) {
+          if (local[level] && isBetterScore(local[level],
+            (remote || []).find(row => row.difficulty === level)
+              ? {
+                  score: remote.find(row => row.difficulty === level).score,
+                  elapsed: remote.find(row => row.difficulty === level).elapsed_seconds
+                } : null)) {
+            void syncScore(token, level, local[level])
+              .catch(() => console.warn("O recorde local será sincronizado em outro acesso."));
+          }
+        }
+        try { localStorage.setItem(RECORDS_KEY, JSON.stringify(merged)); } catch { /* armazenamento opcional */ }
+        setRecords(merged);
+      } catch (error) {
+        if (!controller.signal.aborted) console.warn("Recordes online indisponíveis; usando dados locais.");
+      }
+    }
+    void loadRecords();
+    return () => controller.abort();
+  }, [supabaseSession?.access_token]);
 
   const playSound = (type) => {
     if (!soundEnabled) return;
@@ -160,9 +221,14 @@ export default function App() {
       (score === existing.score && game.elapsed < existing.elapsed);
     setIsNewRecord(improved);
     if (improved) {
-      const next = { ...previous, [game.level]: { score, elapsed: game.elapsed, moves: game.moves } };
+      const record = { score, elapsed: game.elapsed, moves: game.moves };
+      const next = { ...previous, [game.level]: record };
       try { localStorage.setItem(RECORDS_KEY, JSON.stringify(next)); } catch { /* Armazenamento opcional. */ }
       setRecords(next);
+      if (supabaseSession?.access_token) {
+        void syncScore(supabaseSession.access_token, game.level, record)
+          .catch(() => console.warn("Recorde salvo neste navegador, mas não sincronizado."));
+      }
     }
     playSound("win");
     const timeout = window.setTimeout(() => {
