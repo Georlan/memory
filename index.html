@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="PARES — um jogo da memória interativo, bonito e desafiador. Vire cartas, encontre pares e bata seu recorde.">
+  <title>PARES — Jogo da Memória</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <a href="./" class="brand" aria-label="PARES, início">
+        <span class="brand-symbol" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        <span>PARES<span class="brand-dot">.</span></span>
+      </a>
+      <div class="header-actions">
+        <span class="header-label">UM JOGO PARA SUA MENTE <span aria-hidden="true">✦</span></span>
+        <button id="soundToggle" class="icon-button" type="button" aria-label="Ativar som" aria-pressed="false" title="Ativar ou desativar som">
+          <svg id="soundIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 5 6 9H3v6h3l5 4V5Z"></path><path class="sound-wave" d="M15 9a5 5 0 0 1 0 6"></path><path class="sound-wave" d="M18 6a9 9 0 0 1 0 12"></path><path class="sound-mute" d="m16 9 5 6m0-6-5 6"></path>
+          </svg>
+          <span id="soundLabel">Som desligado</span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="pageTitle">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-line"></span> ATENÇÃO, FOCO E DIVERSÃO</div>
+          <h1 id="pageTitle">Dê um match<br>na sua <em>memória<span class="period">.</span></em></h1>
+          <p>Encontre os pares escondidos, desafie sua concentração e supere seu próprio recorde.</p>
+        </div>
+        <div class="hero-decoration" aria-hidden="true">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+          <div class="hero-tile hero-tile-one">✳</div><div class="hero-tile hero-tile-two">★</div>
+          <div class="hero-sparkle">✦</div>
+        </div>
+      </section>
+
+      <section class="game-layout" aria-label="Jogo da memória">
+        <div class="play-panel">
+          <div class="panel-heading">
+            <div>
+              <div class="section-kicker"><span class="online-dot"></span> PARTIDA EM ANDAMENTO</div>
+              <h2>Encontre os pares <span id="boardCount" class="pair-total">0/6</span></h2>
+            </div>
+            <button id="shuffleButton" class="subtle-button" type="button" title="Recomeçar com as cartas embaralhadas">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3v6h-6"></path><path d="M3.5 10a9 9 0 0 1 15-4l2.5 3M3 21v-6h6"></path><path d="M20.5 14a9 9 0 0 1-15 4L3 15"></path></svg>
+              Novo jogo
+            </button>
+          </div>
+          <div id="board" class="board level-easy" role="group" aria-label="Cartas da memória"></div>
+          <div class="board-footer">
+            <span class="tip-icon" aria-hidden="true">✳</span>
+            <span id="gameMessage" role="status" aria-live="polite">Vire duas cartas para começar a jogar.</span>
+            <span class="board-foot-tag">BOA SORTE!</span>
+          </div>
+        </div>
+
+        <aside class="game-sidebar" aria-label="Configurações e resultados">
+          <section class="side-card difficulty-card">
+            <div class="side-overline">01 / CONFIGURAR</div>
+            <h2>Seu desafio</h2>
+            <p>Escolha o nível e coloque sua memória à prova.</p>
+            <div class="difficulty-options" role="group" aria-label="Dificuldade">
+              <button type="button" class="difficulty-button active" data-level="easy" aria-pressed="true"><span>Fácil</span><small>6 pares</small></button>
+              <button type="button" class="difficulty-button" data-level="medium" aria-pressed="false"><span>Médio</span><small>8 pares</small></button>
+              <button type="button" class="difficulty-button" data-level="hard" aria-pressed="false"><span>Difícil</span><small>10 pares</small></button>
+            </div>
+          </section>
+
+          <section class="side-card stats-card">
+            <div class="side-overline">02 / DESEMPENHO</div>
+            <div class="stats-heading"><h2>Sua rodada</h2><span class="stats-star" aria-hidden="true">✦</span></div>
+            <div class="stats-grid">
+              <div class="stat-box"><span class="stat-label">JOGADAS</span><strong id="movesStat" class="stat-number">00</strong></div>
+              <div class="stat-box"><span class="stat-label">TEMPO</span><strong id="timeStat" class="stat-number" aria-label="Tempo decorrido">00:00</strong></div>
+              <div class="stat-box"><span class="stat-label">ACERTOS</span><strong id="matchesStat" class="stat-number">00</strong></div>
+              <div class="stat-box"><span class="stat-label">PONTOS</span><strong id="scoreStat" class="stat-number accent-number">000</strong></div>
+            </div>
+            <div class="progress-heading"><span>Progresso</span><strong id="progressText">0%</strong></div>
+            <div class="progress-track" role="progressbar" aria-label="Pares encontrados" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressTrack"><span id="progressFill"></span></div>
+            <div class="record-box"><span aria-hidden="true">🏆</span><div><small>SEU MELHOR RESULTADO</small><strong id="bestScore">Ainda não há recorde</strong></div></div>
+          </section>
+
+          <button id="restartButton" type="button" class="restart-button">
+            <span>Reiniciar partida</span>
+            <span class="restart-arrow" aria-hidden="true">↗</span>
+          </button>
+          <p class="sidebar-note">Cada par vale <strong>100 pontos</strong>. Cada tentativa sem sucesso tira <strong>15 pontos</strong>. O tempo também conta!</p>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="site-footer"><span>FEITO PARA MENTES CURIOSAS.</span><span>JOGUE • DESCUBRA • REPITA <span aria-hidden="true">✦</span></span></footer>
+  </div>
+
+  <dialog id="winDialog" class="win-dialog" aria-labelledby="winTitle">
+    <div id="confetti" class="confetti" aria-hidden="true"></div>
+    <div class="win-content">
+      <span class="win-emblem" aria-hidden="true">✷</span>
+      <span class="win-kicker">DESAFIO CONCLUÍDO</span>
+      <h2 id="winTitle">Você deu um<br><em>match perfeito!</em></h2>
+      <p id="winMessage">Sua memória está afiada. Que tal mais uma rodada?</p>
+      <div class="win-stats">
+        <div><span>JOGADAS</span><strong id="winMoves">0</strong></div>
+        <div><span>TEMPO</span><strong id="winTime">00:00</strong></div>
+        <div><span>PONTOS</span><strong id="winScore">0</strong></div>
+      </div>
+      <button id="playAgainButton" class="play-again-button" type="button">Jogar novamente <span aria-hidden="true">↗</span></button>
+    </div>
+  </dialog>
+</body>
+</html>
