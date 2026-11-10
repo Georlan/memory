@@ -15,5 +15,5 @@ ENV PORT=3001
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server ./server
 EXPOSE 3001
-USER node
+# Railway volumes podem ser montados com permissões de root; manter escrita em /data.
 CMD ["node", "server/index.mjs"]
