@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 790" role="img" aria-labelledby="title desc">
+  <title id="title">Piloto futurista em alta velocidade</title>
+  <desc id="desc">Ilustração vetorial original de um piloto com capacete vermelho, cinza e azul-escuro cercado por traços expressivos de velocidade.</desc>
+  <defs>
+    <linearGradient id="suit" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#2a354c"/><stop offset=".56" stop-color="#0b1325"/><stop offset="1" stop-color="#1d2940"/></linearGradient>
+    <linearGradient id="helmet" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#707d90"/><stop offset=".23" stop-color="#263247"/><stop offset=".67" stop-color="#111b2e"/><stop offset="1" stop-color="#5e6571"/></linearGradient>
+    <linearGradient id="visor" x1="0" x2="1" y1="0" y2=".8"><stop stop-color="#0a1324"/><stop offset=".45" stop-color="#273449"/><stop offset="1" stop-color="#050c1b"/></linearGradient>
+    <clipPath id="pilot"><path d="M159 686 213 461 298 353 417 302 528 348 619 467 714 686Z"/></clipPath>
+  </defs>
+  <g fill="none" stroke-linecap="round">
+    <path stroke="#d92031" stroke-width="23" d="M80 518 310 333M38 585 240 449M491 86 720 225M645 90 856 221"/>
+    <path stroke="#d92031" stroke-width="10" d="M56 648 235 511M504 45 665 144M732 252 893 354M136 342 323 274"/>
+    <path stroke="#162137" stroke-width="17" d="M61 416 293 305M648 103 844 245M693 526 892 612"/>
+    <path stroke="#293751" stroke-width="6" d="M83 375 263 292M30 467 146 414M702 70 906 201M751 559 927 643"/>
+    <path stroke="#e94736" stroke-width="7" d="M64 280 209 243M709 138 899 271M741 721 901 772"/>
+    <path stroke="#e2a832" stroke-width="12" d="M472 40 540 84M784 368 888 435"/>
+    <path stroke="#18253b" stroke-width="4" d="M120 701 249 574M800 496 927 549M65 312 179 277"/>
+  </g>
+  <g fill="#d62030">
+    <path d="m75 515 96-51-29 36-87 46ZM717 231l117 71-64-15-67-43ZM59 657l118-80-30 47-107 63ZM738 660l161 56-90-10-83-35Z"/>
+    <path d="m169 240 118-45-55 39-98 29ZM514 72l99 44-65-8-67-30Z"/>
+    <circle cx="96" cy="357" r="6"/><circle cx="112" cy="389" r="4"/><circle cx="746" cy="85" r="8"/>
+    <circle cx="845" cy="462" r="9"/><circle cx="878" cy="484" r="5"/><circle cx="190" cy="680" r="7"/>
+  </g>
+  <g transform="rotate(-10 475 456)">
+    <!-- Suit silhouette and neck -->
+    <path d="M139 716 195 477Q220 398 310 357l109-57 103 22q105 36 145 166l76 228Z" fill="url(#suit)" stroke="#0b1428" stroke-width="19" stroke-linejoin="round"/>
+    <path d="M220 459Q275 382 378 356l40 79-55 93-154 90Z" fill="#d61d31"/>
+    <path d="M577 384q86 43 105 113l57 202-109-13-72-178Z" fill="#c91b2d"/>
+    <path d="M231 504 302 420 359 427 301 524 236 654 174 711Z" fill="#1b2c42"/>
+    <path d="m315 424 77-51 50 64-93 110-69 166-46-1 73-188Z" fill="#0a1325"/>
+    <path d="m544 405 71 40 46 160-81-87-50-35Z" fill="#192940"/>
+    <path d="M375 518q104-45 180-3l57 200-322 1Z" fill="#131c30"/>
+    <path d="m381 560 131-24 32 31-128 37Z" fill="#26354c"/>
+    <path d="m288 633 83-88 39 27-74 145h-83Z" fill="#d72236"/>
+    <path d="M575 549q48 30 80 118l17 48h-67l-71-117Z" fill="#dd2334"/>
+    <g stroke="#d72435" stroke-width="10" fill="none"><path d="m217 482 80-89M241 632l69-115M623 486l59 145"/></g>
+    <g fill="#edcf94"><path d="m235 555 55-88-20 83-33 67Z"/><path d="m591 535 34 38-8-54Z"/></g>
+    <g fill="#f4edd7" opacity=".68"><path d="m334 398 37-26-39 50-26 14Z"/><path d="m485 537 81 30-70-7-39-12Z"/></g>
+    <path d="m324 659 151-32 88 44 19 43-273 1Z" fill="#0a1221"/>
+    <path d="m362 674 81-12 67 22-94-2Z" fill="#44516b"/>
+    <path d="m468 332 11-87 75-8 48 98-25 96-101 6Z" fill="#101a2d" stroke="#141c31" stroke-width="13"/>
+    <!-- Helmet shell -->
+    <path d="M412 230q-25-63 1-124Q455 27 552 25q113-2 159 90 39 77-9 164l-64 68-141 3-66-61Z" fill="url(#helmet)" stroke="#0e1728" stroke-width="17" stroke-linejoin="round"/>
+    <path d="M413 180q7-90 79-133l24-6-41 58-18 80-35 45Z" fill="#d52034"/>
+    <path d="M524 40q114-27 178 91l-4 36-58-80-71-30-59-2Z" fill="#db2034"/>
+    <path d="M431 112q36-74 119-67 59 2 99 34l-34 10-94-16-54 35Z" fill="#f8ead1"/>
+    <path d="m654 86 57 52-10 51-38-65Z" fill="#edb643"/>
+    <!-- Visor and reflective slashes -->
+    <path d="M431 169Q473 111 552 117l118 23 30 49-25 74-70 35-148-10-42-54Z" fill="#06101f" stroke="#0d1726" stroke-width="12"/>
+    <path d="M436 181q67-39 120-35l109 18-31 18-114-7-87 40Z" fill="#64738b"/>
+    <path d="m466 212 119-8 72 17-19 11-118 7-68 28Z" fill="#2b3c55"/>
+    <path d="m549 152 93 17-18 13-100-11Z" fill="#c4cdd8"/>
+    <path d="m621 241 52-23-10 26-54 24Z" fill="#9da9b8"/>
+    <path d="m421 244 37 43 77 22-64-1-46-33Z" fill="#dd2138"/>
+    <path d="m482 312 118 13 71-40-40 58-134 12Z" fill="#e7d6c2"/>
+    <path d="m501 322 129 8-30 16-106 1Z" fill="#d82432"/>
+    <path d="m440 286 25 33-5-74Z" fill="#eaae3c"/>
+    <path d="m670 136 28 44-20 71-15-6 17-58Z" fill="#d92332"/>
+    <path d="m701 251-37 60-33 16 45-79Z" fill="#25344a"/>
+    <path d="M415 157q-14 87 22 133l15 11-11-77Z" fill="#29364b"/>
+    <path d="m432 105 47-49 35-8-36 28Z" fill="#fbefcc"/>
+    <path d="m555 58 58 22 33 30-53-25Z" fill="#acbac4"/>
+    <g fill="none" stroke="#d72034" stroke-linecap="round"><path stroke-width="12" d="M419 138 437 96M670 115l23 46M619 317l48-23"/><path stroke-width="5" d="m452 341 47 30M589 359l51-31"/></g>
+    <path d="m466 365 54 27 68-24-35 52-77-6Z" fill="#151e30"/>
+    <!-- Jacket highlights and ink cuts -->
+    <path d="m222 689 35-111-8 124Z" fill="#f1dfca" opacity=".68"/>
+    <path d="m618 588 17 91-50-87Z" fill="#ffe3c0" opacity=".65"/>
+    <path d="m334 496 31-60 12 8-24 74Z" fill="#566079"/>
+    <path d="m463 479 53-16 34 8-63 20Z" fill="#53617a"/>
+  </g>
+  <g stroke-linecap="round" fill="none">
+    <path stroke="#d62030" stroke-width="15" d="M112 746 312 661M692 395 868 475"/>
+    <path stroke="#182238" stroke-width="8" d="M52 727 275 652M758 419 898 487"/>
+    <path stroke="#df2a30" stroke-width="5" d="m135 766 99-43M807 531l90 38M345 138l77-47"/>
+  </g>
+</svg>
